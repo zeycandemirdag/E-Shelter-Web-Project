@@ -38,6 +38,14 @@ const customTheme = createTheme({
           </ListItemIcon>
           <ListItemText primary="Veterinars" />
         </ListItemButton>
+
+        <ListItemButton component={Link} to="/donations">
+          <ListItemIcon>
+            <PetsIcon/>
+          </ListItemIcon>
+          <ListItemText primary="Donations" />
+        </ListItemButton>
+
         <ListItemButton component={Link} to="/ownerdetails">
     <ListItemIcon>
         <PetsIcon />

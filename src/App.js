@@ -6,6 +6,7 @@ import AdminPage from './AdminPages/AdminPage';
 import AdminVeterinary from './AdminPages/AddVeterinar';
 import Home from './Pages/Home';
 import OwnerDetails from './AdminPages/OwnerPage';
+import Donations from './AdminPages/Donations';
 function App() {
   
   return ( 
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Home/>} />
         <Route path="/admin" element={<AdminPage/>} />
         <Route path="/adminanimal" element={<AdminAnimal/>} />
+        <Route path="/donations" element={<Donations/>} />
         <Route path="/veterinaries" element={<AdminVeterinary/>} />
         <Route path="/ownerdetails" element={<OwnerDetails/>} />
        </Routes>

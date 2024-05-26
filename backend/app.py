@@ -130,6 +130,7 @@ def get_vets():
 
     except Exception as e:
         return jsonify({"error": str(e)})
+    
 @app.route('/addvet', methods=['POST'])
 def add_veterinarian():
     try:
@@ -289,6 +290,7 @@ def get_available_users():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 @app.route('/addOwner', methods=['POST'])
 def add_owner():
     try:
@@ -333,6 +335,7 @@ def add_owner():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
+        
 @app.route('/addAnimal', methods=['POST'])
 def add_animal():
     try:
@@ -387,6 +390,7 @@ def add_animal():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
+    
 @app.route('/deleteAnimal/<int:animalId>', methods=['DELETE'])
 def delete_animal(animalId):
     try:
@@ -429,6 +433,67 @@ def delete_animal(animalId):
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
+    
+@app.route('/getDonations', methods=['GET'])
+def get_donations():
+    try:
+        query = """
+            SELECT d.donationid, u.name, u.surname, d.date, d.amount
+            FROM donation d
+            JOIN users u ON d.pid = u.pid
+        """
+        cur.execute(query)
+        donations_data = cur.fetchall()
+
+        total_amount = sum(row[4] for row in donations_data)
+
+        donations_list = []
+        for row in donations_data:
+            donation_dict = {
+                'donationid': row[0],
+                'name': row[1],
+                'surname': row[2],
+                'date': row[3].strftime('%Y-%m-%d'),
+                'amount': row[4]
+            }
+            donations_list.append(donation_dict)
+
+        return jsonify({
+            'donations': donations_list,
+            'total_amount': total_amount
+        }), 200
+
+    except psycopg2.Error as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/deleteDonation/<int:donationId>', methods=['DELETE'])
+def delete_donation(donationId):
+    try:
+        # Delete from adoption table
+        delete_adoption_query = sql.SQL("""
+            DELETE FROM donation
+            WHERE donationid = %s
+        """)
+        cur.execute(delete_adoption_query, (donationId, ))
+
+      
+
+        conn.commit()
+
+        return jsonify({"message": "Donation deleted successfully"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
