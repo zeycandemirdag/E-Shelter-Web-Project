@@ -3,27 +3,15 @@ import Container from "@mui/material/Container";
 import { Box } from "@mui/material";
 import Link from "@mui/material/Link";
 
-
-
-
 export const navLinks = [
+
     {
       id: 1,
-      name: "Home",
-      destination:"/",
-    },
-    {
-      id: 2,
-      name: "Animals",
-      destination:"/animal",
-    },
-    {
-      id: 3,
       name: "Login",
       destination:"/login",
     },
     {
-      id: 4,
+      id: 2,
       name: "Register",
       destination:"/register",
     },

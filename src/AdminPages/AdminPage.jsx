@@ -62,11 +62,6 @@ const AdminPage = () => {
     fetchData();
   }, [responseM]);
  
- 
-  
-
- 
-   
   const handleReject = (formId) => {
     
     const data = {

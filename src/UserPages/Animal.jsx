@@ -6,11 +6,9 @@ import {
   Box, Typography, Container, Dialog, IconButton, Tooltip, DialogActions, DialogContent, DialogTitle, TextField, MenuItem, Select, InputLabel, FormControl, ThemeProvider
 } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-import AdminAppBarFunction from './AdminAppBar';
+import AppBarFunction from './AppBar';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import MedicalHistoryDialog from './MedicalHistoryDialog';
+import MedicalHistoryDialog from '../AdminPages/MedicalHistoryDialog';
 
 const customTheme = createTheme({
   palette: {
@@ -34,10 +32,10 @@ const animalStatusOptions = [
   { value: false, label: 'False' },
 ];
 
-export default function AdminAnimal() {
+export default function Animal() {
   const [petsList, setPetsList] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [addAnimalDialogOpen, setAddAnimalDialogOpen] = useState(false); // State for Add Animal Dialog
+  
   const [animalDetails, setAnimalDetails] = useState(null); // State for selected animal details
   const [animalName, setAnimalName] = useState('');
   const [status, setStatus] = useState(false);
@@ -99,44 +97,11 @@ export default function AdminAnimal() {
     });
   };
 
-  const handleDeleteAnimal = async (animalId) => {
-    try {
-      await axios.delete(`http://localhost:5000/deleteAnimal/${animalId}`);
-      fetchData();
-    } catch (error) {
-      console.log(error.response);
-    }
-  };
-
-  const handleAddAnimal = async () => {
-    try {
-      const response = await axios.post('http://localhost:5000/addAnimal', {
-        animalName,
-        status,
-        age,
-        genus,
-        gender,
-        photo,
-        vetId,
-        medication: medicalHistory.medication,
-        height: medicalHistory.height,
-        weight: medicalHistory.weight,
-        medicalCondition: medicalHistory.medicalCondition,
-        note: medicalHistory.note,
-      });
-      console.log(response.data.message);
-      setAddAnimalDialogOpen(false);
-      fetchData();
-    } catch (error) {
-      console.log(error.response);
-    }
-  };
-
   return (
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <Box>
-        <AdminAppBarFunction />
+        <AppBarFunction />
         <br></br>
         <br></br>
         <br></br>
@@ -172,12 +137,7 @@ export default function AdminAnimal() {
                                   <Typography variant="body2" color="text.primary" style={{ marginLeft: '5px' }}>Details</Typography>
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton color="error" onClick={() => handleDeleteAnimal(pet.animalId)}>
-                                  <DeleteIcon />
-                                  <Typography variant="body2" color="error" style={{ marginLeft: '5px' }}>Delete</Typography>
-                                </IconButton>
-                              </Tooltip>
+
                             </CardActions>
                           </Card>
                         </Grid>
@@ -188,16 +148,7 @@ export default function AdminAnimal() {
                   )}
                 </>
               )}
-              <Box mt={4} textAlign="center">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={() => setAddAnimalDialogOpen(true)} // Open Add Animal Dialog
-                >
-                  Add New Animal
-                </Button>
-              </Box>
+  
             </Container>
           </Box>
         </main>
@@ -240,140 +191,7 @@ export default function AdminAnimal() {
         )}
       </Dialog>
 
-      {/* Add New Animal Dialog */}
-      <Dialog open={addAnimalDialogOpen} onClose={() => setAddAnimalDialogOpen(false)}>
-        <DialogTitle>Add New Animal</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="animalName"
-            label="Animal Name"
-            type="text"
-            fullWidth
-            value={animalName}
-            onChange={(e) => setAnimalName(e.target.value)}
-          />
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              fullWidth
-            >
-              {animalStatusOptions.map((option) => (
-                <MenuItem
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            margin="dense"
-            id="age"
-            label="Age"
-            type="text"
-            fullWidth
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            id="genus"
-            label="Genus"
-            type="text"
-            fullWidth
-            value={genus}
-            onChange={(e) => setGenus(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            id="gender"
-            label="Gender"
-            type="text"
-            fullWidth
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            id="photo"
-            label="Animal Photo"
-            type="text"
-            fullWidth
-            value={photo}
-            onChange={(e) => setPhoto(e.target.value)}
-          />
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Veterinarian</InputLabel>
-            <Select
-              value={vetId}
-              onChange={(e) => setVetId(e.target.value)}
-              fullWidth
-            >
-              {veterinarians.map((vet) => (
-                <MenuItem key={vet.vetId} value={vet.vetId}>
-                  {vet.vetName} {vet.vetSurname}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Typography variant="h6" sx={{ mt: 2 }}>Medical History:</Typography>
-          <TextField
-            margin="dense"
-            id="medication"
-            label="Medication"
-            type="text"
-            fullWidth
-            value={medicalHistory.medication}
-            onChange={(e) => setMedicalHistory({ ...medicalHistory, medication: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            id="height"
-            label="Height"
-            type="text"
-            fullWidth
-            value={medicalHistory.height}
-            onChange={(e) => setMedicalHistory({ ...medicalHistory, height: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            id="weight"
-            label="Weight"
-            type="text"
-            fullWidth
-            value={medicalHistory.weight}
-            onChange={(e) => setMedicalHistory({ ...medicalHistory, weight: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            id="medicalCondition"
-            label="Medical Condition"
-            type="text"
-            fullWidth
-            value={medicalHistory.medicalCondition}
-            onChange={(e) => setMedicalHistory({ ...medicalHistory, medicalCondition: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            id="note"
-            label="Note"
-            type="text"
-            fullWidth
-            value={medicalHistory.note}
-            onChange={(e) => setMedicalHistory({ ...medicalHistory, note: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddAnimalDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddAnimal} color="primary">Add Animal</Button>
-        </DialogActions>
-      </Dialog>
+
     </ThemeProvider>
   );
 }
-

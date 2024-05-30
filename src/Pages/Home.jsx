@@ -4,7 +4,6 @@ import React from "react";
 import { Box, Container, Typography } from "@mui/material";
 
 import Navbar from "./Navbar";
-import PageButton from "./PageButton";
 import Slogan from "./Slogan";
 
 const Home = () => {
@@ -50,9 +49,9 @@ const Home = () => {
             fontFamily:"Apple Color Emoji",
           }}
         >
-         E-SHELTER ANİMAL ADOPTİON PLATFORM
+         E-SHELTER ANIMAL ADOPTION PLATFORM
         </Typography>
-        <PageButton text="Let's find your friend"  />
+        
         <Slogan />
       </Box>
     </Container>

@@ -3,15 +3,17 @@ import psycopg2 # pip install psycopg2
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from psycopg2 import sql
-from datetime import datetime
+from datetime import date, datetime
 app = Flask(__name__)
 app.secret_key = "super secret key"
 CORS(app)
 
+usernameLogin= ""
+
 try:
-    conn = psycopg2.connect(database="eshelterdb",  
+    conn = psycopg2.connect(database="E-ShelterDB",  
                             user="postgres", 
-                            password="Zaegt21.",  
+                            password="1107",  
                             host="localhost", port="5432") 
     cur = conn.cursor()
     print("Database connection successful.")
@@ -136,8 +138,6 @@ def add_veterinarian():
     try:
         # Gelen JSON verisini al
         vet_data = request.get_json()
-
-
 
         # SQL sorgusu oluştur
         insert_query = sql.SQL("""
@@ -491,9 +491,203 @@ def delete_donation(donationId):
         conn.rollback()
         return jsonify({"error": str(e)}), 400
     
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    email = data.get('email')
+    firstname = data.get('firstName')
+    lastname = data.get('lastName')
+    username = data.get('username')
+    password = data.get('password')
+
+    cur.execute("SELECT email, username FROM users WHERE email = %s OR username = %s", (email, username))
+    user = cur.fetchone()
+
+    print(f"Data to be inserted: {firstname}, {lastname}, {username}, {password}, {email}")
+
+    if not firstname or not lastname or not username or not password or not email:
+        return jsonify({'message': 'Please fill out the form!'}), 400
+
+    elif user:
+        return jsonify({'message': 'Account already exists!'}), 400
+
+    else:
+        cur.execute("INSERT INTO users (email, username, name, surname, password) VALUES (%s, %s, %s, %s, %s)", (email, username, firstname, lastname, password))
+        conn.commit()
+        return jsonify({'message': 'You have successfully registered!'}), 200
 
 
+"""@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json() 
+    print("data",data)
+    username = data.get('username')
+    print("username",username)
+    password = data.get('password')
 
+    # Check if account exists in our database
+    cur.execute("SELECT email, username, name, surname, password FROM users WHERE username = %s", (username,))
+    user = cur.fetchone()
+
+    print(f"Data to be checked: {password}, {username}")
+    
+    if not password or not username:
+        return jsonify({'message': 'Please fill out the form!'}), 400
+    print("user:",user)
+    if user:
+        user_password_hash = user[4]
+        
+        if user_password_hash==password:
+            if user[0] == "admin@admin.com":
+                return jsonify({'message': 'admin'}), 200
+            else:
+                global usernameLogin
+                usernameLogin= usernameLogin+ username
+                print(usernameLogin)
+                return jsonify({'message': 'Login successful'}), 200
+        else:
+            return jsonify({'message': 'Incorrect password'}), 400
+    else:
+        return jsonify({'message': 'Incorrect username'}), 400"""
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    print("data", data)
+    username = data.get('username')
+    print("username", username)
+    password = data.get('password')
+
+    # Check if account exists in our database
+    #cur.execute("SELECT email, username, name, surname, password FROM users WHERE username = %s", (username,))
+    cur.execute("SELECT email, username, name, surname, password FROM users WHERE username = %s", (username,))
+    user = cur.fetchone()
+
+
+    cur.execute("SELECT email, username, name, surname, password FROM admins WHERE username = %s", (username,))
+    admin=cur.fetchone()
+    print(f"Data to be checked: {password}, {username}")
+
+    if not password or not username:
+        return jsonify({'message': 'Please fill out the form!'}), 400
+
+    print("user:", user)
+    global usernameLogin
+    usernameLogin=""
+    """if user or admin:
+        user_password_hash = user[4]
+        admin_password_hash=admin[4]
+
+        if user_password_hash == password:
+            # Check if the user is an admin
+            cur.execute("SELECT username FROM admins  WHERE username = %s", (username,))
+            admin_user = cur.fetchone()
+
+            if admin_user:
+                return jsonify({'message': 'admin'}), 200
+            else:
+                return jsonify({'message': 'Login successful'}), 200
+        else:
+            return jsonify({'message': 'Incorrect password'}), 400
+    else:
+        return jsonify({'message': 'Incorrect username'}), 400"""
+    
+    if user:
+        user_password_hash = user[4]
+        
+        if user_password_hash==password:
+      
+            
+            usernameLogin= usernameLogin+ username
+            print(usernameLogin)
+            return jsonify({'message': 'Login successful'}), 200
+        else:
+            return jsonify({'message': 'Incorrect password'}), 400
+    elif admin:
+        admin_password_hash = admin[4]
+        
+        if admin_password_hash==password:
+ 
+            
+            usernameLogin= usernameLogin+ username
+            print(usernameLogin)
+            return jsonify({'message': 'admin'}), 200
+        else:
+            return jsonify({'message': 'Incorrect password'}), 400
+
+    else:
+        return jsonify({'message': 'Incorrect username'}), 400
+    
+    
+    
+
+@app.route('/getUser', methods=['POST'])
+def getUser():
+    global usernameLogin
+    username1 = usernameLogin
+    print("username1:", username1)
+    
+    try:
+        # Fetch user information
+        cur.execute("SELECT email, username, name, surname, password FROM users WHERE username = %s", (username1,))
+        user = cur.fetchone()
+        
+        if user:
+            return jsonify({'message': user}), 200
+        else:
+            return jsonify({'message': 'User not found!'}), 404
+        
+        print("user", user)
+        
+
+    
+    except Exception as e:
+        print(f"Error retrieving information: {e}")
+        return jsonify({'message': 'Error retrieving information!'}), 500
+    
+@app.route('/updateUser', methods=['POST'])
+def updateUser():
+    global usernameLogin
+    data = request.get_json()
+    email = data.get('email')
+    name = data.get('name')
+    surname = data.get('surname')
+    password = data.get('password')
+    
+    try:
+        # Update user information in the database
+        cur.execute("UPDATE users SET email = %s, name = %s, surname = %s, password = %s WHERE username = %s", 
+                    (email, name, surname, password, usernameLogin))
+        conn.commit()
+        return jsonify({'message': 'User updated successfully!'}), 200
+    except Exception as e:
+        print(f"Error updating user information: {e}")
+        return jsonify({'message': 'Error updating user information!'}), 500
+
+# Route to handle donation form submission
+@app.route('/donation', methods=['POST'])
+def donation():
+    global usernameLogin  # Assuming you have the username stored globally
+    data = request.get_json()
+    name = data.get('name')
+    surname = data.get('surname')
+    email = data.get('email')
+    phonenumber = data.get('phonenumber')
+    amount = data.get('amount')
+
+    try:
+        # Fetch the user ID (pid) based on the provided username
+        cur.execute("SELECT pid FROM users WHERE username = %s", (usernameLogin,))
+        pid = cur.fetchone()[0]
+
+        # Insert donation details into the database
+        cur.execute("INSERT INTO donation (pid, date, amount) VALUES (%s, %s, %s)",
+                    (pid, date.today(), amount))
+        conn.commit()
+
+        return jsonify({'message': 'Donation successfully recorded!'}), 200
+    except Exception as e:
+        print(f"Error recording donation: {e}")
+        return jsonify({'message': 'Error recording donation!'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
